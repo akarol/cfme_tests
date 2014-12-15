@@ -6,7 +6,7 @@ from functools import partial
 import cfme.fixtures.pytest_selenium as sel
 import cfme.web_ui.tabstrip as tabs
 import cfme.web_ui.toolbar as tb
-from cfme.web_ui import Form, Region, Select, fill, form_buttons, flash, Table
+from cfme.web_ui import Form, Region, Select, fill, form_buttons, flash, Table, CheckboxTable
 from cfme.web_ui.menu import nav
 from utils.update import Updateable
 
@@ -15,6 +15,8 @@ details_page = Region(infoblock_type='detail')
 
 cfg_btn = partial(tb.select, 'Configuration')
 timeprofile_table = Table("//div[@id='main_div']//table[@class='style3']")
+quadicons_table = CheckboxTable("//table[@class='style3']")
+
 
 nav.add_branch(
     'my_settings',
@@ -103,6 +105,9 @@ class Timeprofile(Updateable):
 
 
 class Visual(Updateable):
+
+    pretty_attrs = ['name']
+
     item_form = Form(
         fields=[
             ('grid_view', Select('//select[@id="perpage_grid"]')),
@@ -111,12 +116,27 @@ class Visual(Updateable):
             ('reports', Select('//select[@id="perpage_reports"]')),
         ])
 
+    quadicons_form = Form(
+        fields=[
+            ('infra_provider_quad', "//input[@id='quadicons_ems']"),
+            ('cloud_provider_quad', "//input[@id='quadicons_ems_cloud']"),
+            ('host_quad', "//input[@id='quadicons_host']"),
+            ('datastore_quad', "//input[@id='quadicons_storage']"),
+            ('datastoreitem_quad', "//input[@id='quadicons_storageitem]"),
+            ('vm_quad', "//input[@id='quadicons_vm']"),
+            ('vmitem_quad', "//input[@id='quadicons_vmitem']"),
+            ('template_quad', "//input[@id='quadicons_miq_template']"),
+        ])
+
     save_button = form_buttons.FormButton("Add this Time Profile")
 
-    def __init__(self, grid_view=None, tile_view=None, list_view=None):
+    def __init__(self, grid_view=None, tile_view=None, list_view=None,
+                infra_provider_quad=None, cloud_provider_quad=None):
         self.grid_view = grid_view
         self.tile_view = tile_view
         self.list_view = list_view
+        self.infra_provider_quad = infra_provider_quad
+        self.cloud_provider_quad = cloud_provider_quad
 
     @property
     def grid_view_limit(self):
@@ -150,5 +170,10 @@ class Visual(Updateable):
         sel.force_navigate("my_settings_visual")
         fill(self.item_form.list_view, str(value))
         sel.click(form_buttons.save)
+
+    def check_quads(self):
+        sel.force_navigate("my_settings_visual")
+        sel.check(sel.elements(".//input[@type='checkbox']", root=sel.element(self.infra_provider_quad)))
+
 
 visual = Visual()

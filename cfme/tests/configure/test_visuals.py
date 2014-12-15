@@ -62,3 +62,7 @@ def test_list_page_per_item(provider_init, page, set_list):
     tb.select('List View')
     if int(paginator.rec_total()) >= int(limit):
         assert int(paginator.rec_end()) == int(limit), "Listview Failed for page {}!".format(page)
+
+
+def test_grid_icons_quads():
+    visual.check_quads()
