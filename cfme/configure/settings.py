@@ -6,7 +6,7 @@ from functools import partial
 import cfme.fixtures.pytest_selenium as sel
 import cfme.web_ui.tabstrip as tabs
 import cfme.web_ui.toolbar as tb
-from cfme.web_ui import Form, Region, Select, fill, form_buttons, flash, Table, CheckboxTable
+from cfme.web_ui import Quadicon, Form, Region, Select, fill, form_buttons, flash, Table
 from cfme.web_ui.menu import nav
 from utils.update import Updateable
 
@@ -15,7 +15,6 @@ details_page = Region(infoblock_type='detail')
 
 cfg_btn = partial(tb.select, 'Configuration')
 timeprofile_table = Table("//div[@id='main_div']//table[@class='style3']")
-quadicons_table = CheckboxTable("//table[@class='style3']")
 
 
 nav.add_branch(
@@ -122,7 +121,7 @@ class Visual(Updateable):
             ('cloud_provider_quad', "//input[@id='quadicons_ems_cloud']"),
             ('host_quad', "//input[@id='quadicons_host']"),
             ('datastore_quad', "//input[@id='quadicons_storage']"),
-            ('datastoreitem_quad', "//input[@id='quadicons_storageitem]"),
+            ('datastoreitem_quad', "//input[@id='quadicons_storageitem']"),
             ('vm_quad', "//input[@id='quadicons_vm']"),
             ('vmitem_quad', "//input[@id='quadicons_vmitem']"),
             ('template_quad', "//input[@id='quadicons_miq_template']"),
@@ -131,12 +130,20 @@ class Visual(Updateable):
     save_button = form_buttons.FormButton("Add this Time Profile")
 
     def __init__(self, grid_view=None, tile_view=None, list_view=None,
-                infra_provider_quad=None, cloud_provider_quad=None):
+                infra_provider_quad=False, cloud_provider_quad=False,
+                host_quad=False, datastore_quad=False, datastoreitem_quad=False,
+                vm_quad=False, vmitem_quad=False, template_quad=False):
         self.grid_view = grid_view
         self.tile_view = tile_view
         self.list_view = list_view
         self.infra_provider_quad = infra_provider_quad
         self.cloud_provider_quad = cloud_provider_quad
+        self.host_quad = host_quad
+        self.datastore_quad = datastore_quad
+        self.datastoreitem_quad = datastoreitem_quad
+        self.vm_quad = vm_quad
+        self.vmitem_quad = vmitem_quad
+        self.template_quad = template_quad
 
     @property
     def grid_view_limit(self):
@@ -171,9 +178,40 @@ class Visual(Updateable):
         fill(self.item_form.list_view, str(value))
         sel.click(form_buttons.save)
 
-    def check_quads(self):
-        sel.force_navigate("my_settings_visual")
-        sel.check(sel.elements(".//input[@type='checkbox']", root=sel.element(self.infra_provider_quad)))
+    def update(self, updates):
+        sel.force_navigate("my_settings_visual", context=self)
+        fill(self.quadicons_form, {'infra_provider_quad': updates.get('infra_provider_quad'),
+                                   'cloud_provider_quad': updates.get('cloud_provider_quad'),
+                                   'host_quad': updates.get('host_quad'),
+                                   'datastore_quad': updates.get('datastore_quad'),
+                                   'datastoreitem_quad': updates.get('datastoreitem_quad'),
+                                   'vm_quad': updates.get('vm_quad'),
+                                   'vmitem_quad': updates.get('vmitem_quad'),
+                                   'template_quad': updates.get('template_quad')})
+        sel.click(form_buttons.save)
 
+    def uncheck_checkboxes(self):
+        sel.force_navigate("my_settings_visual")
+        fill(self.quadicons_form, {'infra_provider_quad': self.infra_provider_quad,
+                                   'cloud_provider_quad': self.cloud_provider_quad,
+                                   'host_quad': self.host_quad,
+                                   'datastore_quad': self.datastore_quad,
+                                   'datastoreitem_quad': self.datastoreitem_quad,
+                                   'vm_quad': self.vm_quad,
+                                   'vmitem_quad': self.vmitem_quad,
+                                   'template_quad': self.template_quad})
+        sel.click(form_buttons.save)
+
+    def check_noquad_exists(self):
+        #locator = ("//div[@id='quadicon']/../../../tr/td/a/../img")
+        #if sel.is_displayed(locator):
+          #  return True
+
+        sel.force_navigate("")
+        name = Quadicon.get_first_quad_title()
+        import pdb
+        pdb.set_trace()
+        if sel.is_displayed(Quadicon.only_image_visible(name)):
+            return True
 
 visual = Visual()

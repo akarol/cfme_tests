@@ -1968,6 +1968,16 @@ class Quadicon(Pretty):
         return "//div[contains(@class, '%s72') and ../../../..//a[@title='%s']]" \
             % (corner, self._name)
 
+    def only_image_visible(self):
+        import pdb
+        pdb.set_trace()
+        for quadrant_name in self._quad_data.iterkeys():
+            # These quadrant will be displayed if it is a regular quad
+            quadrant_id = self._quad_data[quadrant_name][0]  # It is a tuple
+            if sel.is_displayed(self._locate_quadrant(quadrant_id)):
+                return False
+        return sel.is_displayed(self._locate_quadrant("e"))  # Image has only 'e', tested only in hosts
+
     def __getattr__(self, name):
         """ Queries the quadrants by name
 
